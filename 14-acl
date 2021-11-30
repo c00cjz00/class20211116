@@ -1,0 +1,543 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "cb481980-83ef-4992-861f-884e78725029",
+   "metadata": {},
+   "source": [
+    "# 14. 台灣杉三號 自訂 ACL分享權限\n",
+    "- 課程重點: ACL建立檔案分享權限"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "d6d5a3f0-3ed2-49bc-b1db-35945d02d3ff",
+   "metadata": {},
+   "source": [
+    "### 執行方法\n",
+    "%cd 為實際切換目錄, 請先切換回 kernel python3"
+   ]
+  },
+  {
+   "cell_type": "raw",
+   "id": "e8df274b-d36d-48ae-9121-e6d9a046f4a9",
+   "metadata": {},
+   "source": [
+    "- & 背景執行\n",
+    "- && 接續執行 前面指令失敗, 中斷\n",
+    "- ; 接續執行 前面指令失敗, 不中斷\n",
+    "- ${myVAR} 環境變數\n",
+    "- $(myCMD) 環境變數"
+   ]
+  },
+  {
+   "cell_type": "raw",
+   "id": "9a63ac02-01c1-4850-9e85-75cf96fd66c4",
+   "metadata": {},
+   "source": [
+    "-m ：配置後續的acl 參數給文件使用，不可與-x 合用；\n",
+    "-x ：刪除後續的acl 參數，不可與-m 合用；\n",
+    "-b ：移除所有的ACL 配置參數；\n",
+    "-k ：移除默認的ACL 參數，關於所謂的『默認』參數於後續範例中介紹；\n",
+    "-R ：遞歸配置acl ，亦即包括次目錄都會被配置起來；\n",
+    "-d ：配置『默認acl 參數』的意思！只對目錄有效，在該目錄新建的數據會引用此默認值"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "id": "a1a67bbd-9bdb-4527-9a55-45b40cf84667",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "getfacl: Removing leading '/' from absolute path names\n",
+      "# file: home/c00cjz002/myfile.txt\n",
+      "# owner: c00cjz002\n",
+      "# group: TRI1091785\n",
+      "user::rw-\n",
+      "group::r--\n",
+      "other::r--\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "## 確認權限\n",
+    "!touch ~/myfile.txt\n",
+    "!getfacl ~/myfile.txt "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "id": "1d5a853d-8c58-4ba2-af87-866f54ecdcd4",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "getfacl: Removing leading '/' from absolute path names\n",
+      "# file: home/c00cjz002/myfile.txt\n",
+      "# owner: c00cjz002\n",
+      "# group: TRI1091785\n",
+      "user::rw-\n",
+      "user:c00cjz00:r-x\n",
+      "group::r--\n",
+      "mask::r-x\n",
+      "other::r--\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "## 執行授權\n",
+    "!setfacl -m u:c00cjz00:rx ~/myfile.txt\n",
+    "!getfacl ~/myfile.txt\n",
+    "!ls -alt ~/myfile.txt"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "id": "e65b9156-7e19-4815-a3bc-fe3d759fe680",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "getfacl: Removing leading '/' from absolute path names\n",
+      "# file: home/c00cjz002/myfile.txt\n",
+      "# owner: c00cjz002\n",
+      "# group: TRI1091785\n",
+      "user::rw-\n",
+      "user:c00cjz00:r-x\n",
+      "group::r--\n",
+      "group:TRI1091785:r-x\n",
+      "mask::r-x\n",
+      "other::r--\n",
+      "\n",
+      "-rw-r-xr--+ 1 c00cjz002 TRI1091785 1256 Dec  1 02:23 /home/c00cjz002/myfile.txt\n"
+     ]
+    }
+   ],
+   "source": [
+    "# 授予 mygroup 群組 rx 權限\n",
+    "!setfacl -m g:TRI1091785:rx ~/myfile.txt\n",
+    "!getfacl ~/myfile.txt\n",
+    "!ls -alt ~/myfile.txt"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "id": "24311de0-00b3-45bc-956b-dd2f5478c896",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "getfacl: Removing leading '/' from absolute path names\n",
+      "# file: home/c00cjz002/myfile.txt\n",
+      "# owner: c00cjz002\n",
+      "# group: TRI1091785\n",
+      "user::rw-\n",
+      "user:c00cjz00:r-x\n",
+      "user:c00cjz001:---\n",
+      "group::r--\n",
+      "group:TRI1091785:r-x\n",
+      "mask::r-x\n",
+      "other::r--\n",
+      "\n",
+      "-rw-r-xr--+ 1 c00cjz002 TRI1091785 1256 Dec  1 02:23 /home/c00cjz002/myfile.txt\n"
+     ]
+    }
+   ],
+   "source": [
+    "# 禁止 myuser 使用者存取\n",
+    "!setfacl -m u:c00cjz001:- ~/myfile.txt\n",
+    "!getfacl ~/myfile.txt\n",
+    "!ls -alt ~/myfile.txt"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 21,
+   "id": "c6cab94f-ad67-4b59-b55f-8fdb3de3b1ef",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "getfacl: Removing leading '/' from absolute path names\n",
+      "# file: home/c00cjz002/myfile.txt\n",
+      "# owner: c00cjz002\n",
+      "# group: TRI1091785\n",
+      "user::rw-\n",
+      "group::r--\n",
+      "group:TRI1091785:r-x\n",
+      "mask::r-x\n",
+      "other::r--\n",
+      "\n",
+      "-rw-r-xr--+ 1 c00cjz002 TRI1091785 1256 Dec  1 02:23 /home/c00cjz002/myfile.txt\n"
+     ]
+    }
+   ],
+   "source": [
+    "# 移除 myuser 使用者 ACL 權限\n",
+    "!setfacl -x u:c00cjz00 ~/myfile.txt\n",
+    "!setfacl -x u:c00cjz001 ~/myfile.txt\n",
+    "!getfacl ~/myfile.txt\n",
+    "!ls -alt ~/myfile.txt"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 22,
+   "id": "025cec2b-9165-488a-8ff9-7b6df4580f29",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "getfacl: Removing leading '/' from absolute path names\n",
+      "# file: home/c00cjz002/myfile.txt\n",
+      "# owner: c00cjz002\n",
+      "# group: TRI1091785\n",
+      "user::rw-\n",
+      "group::r--\n",
+      "mask::r--\n",
+      "other::r--\n",
+      "\n",
+      "-rw-r--r--+ 1 c00cjz002 TRI1091785 1256 Dec  1 02:23 /home/c00cjz002/myfile.txt\n"
+     ]
+    }
+   ],
+   "source": [
+    "# 移除 mygroup 群組 ACL 權限\n",
+    "!setfacl -x g:TRI1091785 ~/myfile.txt\n",
+    "!getfacl ~/myfile.txt\n",
+    "!ls -alt ~/myfile.txt"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 23,
+   "id": "2111a87e-8bc5-487b-b099-d79c61b39f04",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "getfacl: Removing leading '/' from absolute path names\n",
+      "# file: home/c00cjz002/myfile.txt\n",
+      "# owner: c00cjz002\n",
+      "# group: TRI1091785\n",
+      "user::rw-\n",
+      "group::r--\n",
+      "other::r--\n",
+      "\n",
+      "-rw-r--r-- 1 c00cjz002 TRI1091785 1256 Dec  1 02:23 /home/c00cjz002/myfile.txt\n"
+     ]
+    }
+   ],
+   "source": [
+    "# 移除檔案所有 ACL 設定\n",
+    "!setfacl -b ~/myfile.txt\n",
+    "!getfacl ~/myfile.txt\n",
+    "!ls -alt ~/myfile.txt"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 24,
+   "id": "d69c773d-8830-4669-895d-9592632ae589",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "setfacl: myfolder: No such file or directory\n",
+      "getfacl: myfolder: No such file or directory\n",
+      "ls: cannot access myfolder: No such file or directory\n"
+     ]
+    }
+   ],
+   "source": [
+    "# 遞迴移除目錄下所有檔案所有 ACL 設定\n",
+    "!setfacl -Rb myfolder\n",
+    "!getfacl myfolder\n",
+    "!ls -alt myfolder"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 26,
+   "id": "22f387da-40b1-402a-9aa4-f7b6bbba18b4",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "getfacl: Removing leading '/' from absolute path names\n",
+      "# file: home/c00cjz002/myfile.txt\n",
+      "# owner: c00cjz002\n",
+      "# group: TRI1091785\n",
+      "user::rw-\n",
+      "user:c00cjz00:r-x\t\t#effective:r--\n",
+      "group::r--\n",
+      "mask::r--\n",
+      "other::r--\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "# 有效權限範圍\n",
+    "# 授予 myuser 使用者 rx 權限\n",
+    "!setfacl -m u:c00cjz00:rx ~/myfile.txt\n",
+    "# 設定遮罩，只開放讀取權限\n",
+    "!setfacl -m m:r ~/myfile.txt\n",
+    "# 查看檔案 ACL 權限\n",
+    "!getfacl ~/myfile.txt"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 29,
+   "id": "4c31bea5-c887-455b-ae68-7fd81e9a79f2",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "getfacl: Removing leading '/' from absolute path names\n",
+      "# file: home/c00cjz002/myfolder/myfile.txt\n",
+      "# owner: c00cjz002\n",
+      "# group: TRI1091785\n",
+      "user::rw-\n",
+      "user:c00cjz00:r-x\t\t#effective:r--\n",
+      "user:c00cjz001:r-x\t\t#effective:r--\n",
+      "group::r-x\t\t\t#effective:r--\n",
+      "mask::r--\n",
+      "other::r--\n",
+      "\n",
+      "total 65\n",
+      "-rw-r--r--+   1 c00cjz002 TRI1091785     0 Dec  1 02:46 myfile.txt\n",
+      "drwxr-xr-x+   2 c00cjz002 TRI1091785  4096 Dec  1 02:46 .\n",
+      "drwx------  197 c00cjz002 TRI1091785 32768 Dec  1 02:46 ..\n"
+     ]
+    }
+   ],
+   "source": [
+    "# 設定目錄預設 ACL 權限\n",
+    "!mkdir -p ~/myfolder\n",
+    "!setfacl -m d:u:c00cjz00:rx ~/myfolder\n",
+    "!setfacl -m d:u:c00cjz001:rx ~/myfolder\n",
+    "\n",
+    "# 建立新檔案\n",
+    "!touch ~/myfolder/myfile.txt\n",
+    "\n",
+    "# 查看檔案 ACL 權限\n",
+    "!getfacl ~/myfolder/myfile.txt\n",
+    "\n",
+    "!ls -alt ~/myfolder"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 30,
+   "id": "e1b928ca-c75a-466b-8c09-762cd0f07dcc",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "getfacl: Removing leading '/' from absolute path names\n",
+      "# file: home/c00cjz002/myfolder\n",
+      "# owner: c00cjz002\n",
+      "# group: TRI1091785\n",
+      "user::rwx\n",
+      "group::r-x\n",
+      "other::r-x\n",
+      "\n",
+      "getfacl: Removing leading '/' from absolute path names\n",
+      "# file: home/c00cjz002/myfolder/myfile.txt\n",
+      "# owner: c00cjz002\n",
+      "# group: TRI1091785\n",
+      "user::rw-\n",
+      "user:c00cjz00:r-x\t\t#effective:r--\n",
+      "user:c00cjz001:r-x\t\t#effective:r--\n",
+      "group::r-x\t\t\t#effective:r--\n",
+      "mask::r--\n",
+      "other::r--\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "# # 移除預設 ACL 權限設定\n",
+    "!setfacl -k ~/myfolder\n",
+    "!getfacl ~/myfolder\n",
+    "!getfacl ~/myfolder/myfile.txt"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "47ed6506-aafd-4d85-9a2c-f517d2459c11",
+   "metadata": {},
+   "source": [
+    "## 練習"
+   ]
+  },
+  {
+   "cell_type": "raw",
+   "id": "c196e90a-96f1-4b69-95e4-3ae1a94a6006",
+   "metadata": {},
+   "source": [
+    "-m ：配置後續的acl 參數給文件使用，不可與-x 合用；\n",
+    "-x ：刪除後續的acl 參數，不可與-m 合用；\n",
+    "-b ：移除所有的ACL 配置參數；\n",
+    "-k ：移除默認的ACL 參數，關於所謂的『默認』參數於後續範例中介紹；\n",
+    "-R ：遞歸配置acl ，亦即包括次目錄都會被配置起來；\n",
+    "-d ：配置『默認acl 參數』的意思！只對目錄有效，在該目錄新建的數據會引用此默認值"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "32e51948-72a4-4c3e-8395-448a817bdbd9",
+   "metadata": {},
+   "source": [
+    "- 語法\t說明\t範例\n",
+    "- u:使用者:權限\t使用者權限\tu:myuser:rx\n",
+    "- user:使用者:權限\t使用者權限（同上）\tuser:myuser:rx\n",
+    "- g:群組:權限\t群組權限\tg:mygroup:rx\n",
+    "- group:群組:權限\t群組權限（同上）\tgroup:mygroup:rx\n",
+    "- o:權限\t其他使用者權限\to:rx\n",
+    "- other:權限\t其他使用者權限（同上）\tother:rx\n",
+    "- m:權限\t有效權限\tm:rx\n",
+    "- mask:權限\t有效權限（同上）\tmask:rx"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 70,
+   "id": "6225619c-653d-4871-8992-35e256cc7eb6",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "total 33\n",
+      "drwx------   2 c00cjz002 TRI1091785  4096 Dec  1 03:09 .\n",
+      "drwx--x--x+ 37 c00cjz002 TRI1091785 16384 Dec  1 03:09 ..\n"
+     ]
+    }
+   ],
+   "source": [
+    "# 建立分享資料夾並先關閉group、other的權限\n",
+    "!rm -rf /work/c00cjz002/share\n",
+    "!mkdir -p /work/c00cjz002/share && chmod 700 /work/c00cjz002/share\n",
+    "!ls -alt /work/c00cjz002/share"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 71,
+   "id": "6f3298be-7b50-478e-9319-ec5bf7efc46f",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# 逐一設定設定使用者id1 id2 id3\n",
+    "#setfacl -m d:u:id1:rx,d:u:id2:rx,d:u:id3:rx /work/c00cjz00/share\n",
+    "!setfacl -m u:c00cjz00:x /work/c00cjz002\n",
+    "!setfacl -m u:c00cjz00:rx /work/c00cjz002/share\n",
+    "!setfacl -m d:u:c00cjz00:rwx /work/c00cjz002/share\n",
+    "!mkdir /work/c00cjz002/share/abc\n",
+    "!touch /work/c00cjz002/share/abc.txt"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 64,
+   "id": "16f42fba-8c0c-4e90-b1bc-d4d41f3987a0",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "getfacl: Removing leading '/' from absolute path names\n",
+      "# file: work/c00cjz002\n",
+      "# owner: c00cjz002\n",
+      "# group: TRI1091785\n",
+      "user::rwx\n",
+      "user:c00cjz00:--x\n",
+      "group::--x\n",
+      "mask::--x\n",
+      "other::--x\n",
+      "\n",
+      "getfacl: Removing leading '/' from absolute path names\n",
+      "# file: work/c00cjz002/share\n",
+      "# owner: c00cjz002\n",
+      "# group: TRI1091785\n",
+      "user::rwx\n",
+      "group::---\n",
+      "other::---\n",
+      "default:user::rwx\n",
+      "default:user:c00cjz00:r-x\n",
+      "default:group::---\n",
+      "default:mask::r-x\n",
+      "default:other::---\n",
+      "\n"
+     ]
+    }
+   ],
+   "source": [
+    "!getfacl /work/c00cjz002/share"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "0e98534e-91c1-47af-bff2-5dea93c5d205",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.8.12"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
